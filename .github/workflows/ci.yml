@@ -126,7 +126,7 @@ jobs:
         with:
           install_components: gke-gcloud-auth-plugin
 
-      - name: Record deploy as a Grafana annotation (DORA: deployment frequency)
+      - name: "Record deploy as a Grafana annotation (DORA: deployment frequency)"
         continue-on-error: true # best-effort; skip quietly if the observability stack isn't up yet
         run: |
           gcloud container clusters get-credentials multicloud-gitops-cluster \
