@@ -21,6 +21,11 @@ server:
 
 injector:
   enabled: true
+  # Single replica in this demo, so the chart's default anti-affinity rule
+  # (spreading replicas across nodes) is pointless here — and GKE Autopilot
+  # requires >=500m CPU on any pod using anti-affinity, which we don't want
+  # to pay for. Disable it instead of bumping resources just to satisfy that.
+  affinity: ""
   resources:
     requests:
       cpu: 25m
