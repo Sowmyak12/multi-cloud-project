@@ -1,6 +1,8 @@
 Drop screenshots here with these exact filenames — the main [README.md](../../README.md) links to them:
 
-- `argocd-apps.png` — ArgoCD UI showing the 4 synced Applications
+- `argocd-apps.png` — ArgoCD UI
+<img width="1685" height="542" alt="image" src="https://github.com/user-attachments/assets/26dcb951-cd6d-4856-bd81-19a0596e9c7c" />
+
 - `grafana-dashboard.png` — the "TaskFlow — SLO & Deploy Frequency" dashboard with real traffic
 <img width="1887" height="877" alt="image" src="https://github.com/user-attachments/assets/c210c45f-e4a7-43b5-ab63-9c5e950d7485" />
 
