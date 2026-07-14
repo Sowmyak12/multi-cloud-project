@@ -11,4 +11,4 @@ resources:
 images:
   - name: taskflow-api
     newName: us-central1-docker.pkg.dev/multicloud-gitops/taskflow/taskflow-api
-    newTag: 4cc2abd
+    newTag: 8a227f2
