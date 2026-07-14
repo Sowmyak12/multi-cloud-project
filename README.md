@@ -60,13 +60,13 @@ cluster.** Nothing is ever `kubectl apply`'d by hand.
 ## Screenshots
 
 **ArgoCD — app-of-apps synced**
-<img width="1685" height="542" alt="ArgoCD showing root, taskflow-api, observability, and vault Applications" src="https://github.com/user-attachments/assets/26dcb951-cd6d-4856-bd81-19a0596e9c7c" />
+![ArgoCD showing root, taskflow-api, observability, and vault Applications](docs/screenshots/argocd-apps.png)
 
 **Grafana — SLO & deploy-frequency dashboard, live traffic**
-<img width="1887" height="877" alt="Grafana dashboard with request rate, latency, and pod restart panels populated" src="https://github.com/user-attachments/assets/c210c45f-e4a7-43b5-ab63-9c5e950d7485" />
+![Grafana dashboard with request rate, latency, and pod restart panels populated](docs/screenshots/grafana-dashboard.png)
 
 **Live API — real request/response**
-<img width="1320" height="55" alt="Terminal curl POST creating a task and GET returning it" src="https://github.com/user-attachments/assets/3bea7374-10fd-437c-a1b5-5dcf8d4308e2" />
+![Terminal curl POST creating a task and GET returning it](docs/screenshots/api-response.png)
 
 ## What this proves (resume → repo)
 
