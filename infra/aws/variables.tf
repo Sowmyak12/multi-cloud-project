@@ -34,7 +34,7 @@ variable "admin_cidr" {
 }
 
 variable "jenkins_instance_type" {
-  description = "EC2 instance type for the Jenkins controller"
+  description = "EC2 instance type for the Jenkins controller. t3.micro is the safe default: it's the only type Free Tier / brand-new AWS accounts are allowed to launch (anything else gets InvalidParameterCombination). Bump it once your account ages out of that restriction, if Jenkins feels memory-starved."
   type        = string
-  default     = "t3.medium"
+  default     = "t3.micro"
 }
