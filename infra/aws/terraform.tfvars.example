@@ -3,3 +3,5 @@ environment         = "portfolio"
 cost_center         = "personal-portfolio"
 cluster_name        = "multicloud-gitops-cluster"
 node_instance_type  = "t3.small"
+admin_cidr          = "YOUR_IP_HERE/32"  # find yours at whatismyip.com
+jenkins_instance_type = "t3.medium"

@@ -52,6 +52,20 @@ module "eks" {
 
   cluster_endpoint_public_access = true
 
+  authentication_mode = "API_AND_CONFIG_MAP"
+
+  access_entries = {
+    jenkins = {
+      principal_arn = aws_iam_role.jenkins.arn
+      policy_associations = {
+        admin = {
+          policy_arn   = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = { type = "cluster" }
+        }
+      }
+    }
+  }
+
   eks_managed_node_groups = {
     default = {
       instance_types = [var.node_instance_type]

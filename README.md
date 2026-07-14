@@ -1,11 +1,12 @@
 # Multi-Cloud GitOps Platform
 
-A small task-tracking API, deployed to GKE the way a real platform team would
-run it: Terraform for infra, GitHub Actions for CI/CD, ArgoCD for GitOps,
-Prometheus/Grafana for observability, and HashiCorp Vault for secrets — with
-an AWS/EKS mirror ready to apply for the multi-cloud story. Built as a
-portfolio project to back up the claims on my resume with something a
-reviewer can actually click through and inspect.
+A small task-tracking API, deployed to two clouds with two deliberately
+different CI/CD patterns: on **GCP**, Terraform + GitHub Actions +
+ArgoCD/GitOps (a controller pulls changes from git), and on **AWS**,
+Terraform + Jenkins (a controller pushes changes straight to the cluster) —
+plus Prometheus/Grafana for observability and HashiCorp Vault for secrets on
+the GCP side. Built as a portfolio project to back up the claims on my resume
+with something a reviewer can actually click through and inspect.
 
 ## Architecture
 
@@ -34,8 +35,13 @@ flowchart LR
         end
     end
 
-    subgraph AWS["AWS (Terraform written, apply-ready — not deployed)"]
-        EKS["EKS + ECR mirror"]
+    subgraph AWS["AWS (apply-ready via docs/bootstrap-aws.md)"]
+        ECR["ECR"]
+        Jenkins["Jenkins (EC2)<br/>build → push → kubectl apply"]
+        subgraph EKS["EKS cluster"]
+            API2["taskflow-api"]
+            Redis2[("redis")]
+        end
     end
 
     Repo --> Actions
@@ -50,12 +56,20 @@ flowchart LR
     Argo --> Vault
     API -. secrets .-> Vault
     Prom -. scrapes .-> API
-    Repo -.-> EKS
+    Repo -- "polled by (SCM pipeline)" --> Jenkins
+    Jenkins -- "docker push" --> ECR
+    Jenkins -- "kubectl apply -k" --> API2
+    Jenkins --> Redis2
 ```
 
-The loop that matters: **CI builds an image → commits the new tag back to
-`gitops/k8s/base` → ArgoCD notices the git change and syncs it to the
-cluster.** Nothing is ever `kubectl apply`'d by hand.
+The loop that matters on GCP: **CI builds an image → commits the new tag
+back to `gitops/k8s/base` → ArgoCD notices the git change and syncs it to
+the cluster.** Nothing is ever `kubectl apply`'d by hand there.
+
+On AWS it's the opposite, on purpose: **Jenkins builds the image, pushes to
+ECR, then runs `kubectl apply` itself** — no controller watching git, no
+pull-based reconciliation. Same app, same shape of cluster, intentionally
+different deployment philosophy to demonstrate both.
 
 ## Screenshots
 
@@ -72,15 +86,17 @@ cluster.** Nothing is ever `kubectl apply`'d by hand.
 
 | Resume line | Where it lives here |
 |---|---|
-| AWS • GCP • Azure • GovCloud, multi-cloud | [`infra/gcp`](infra/gcp) (live) + [`infra/aws`](infra/aws) (apply-ready EKS mirror) |
-| Kubernetes orchestration, Helm, EKS/GKE | [`infra/gcp/gke.tf`](infra/gcp/gke.tf), [`gitops/k8s/base`](gitops/k8s/base), [`gitops/argocd`](gitops/argocd) |
+| AWS • GCP • Azure • GovCloud, multi-cloud | [`infra/gcp`](infra/gcp) (live, GitOps) + [`infra/aws`](infra/aws) (live, Jenkins) |
+| Kubernetes orchestration, Helm, EKS/GKE | [`infra/gcp/gke.tf`](infra/gcp/gke.tf), [`infra/aws/main.tf`](infra/aws/main.tf) (EKS), [`gitops/k8s/base`](gitops/k8s/base) + [`deploy/aws/k8s`](deploy/aws/k8s) |
 | GitOps/ArgoCD deployments | App-of-apps pattern in [`gitops/argocd/apps`](gitops/argocd/apps); CI → git → ArgoCD loop in [`.github/workflows/ci.yml`](.github/workflows/ci.yml) |
-| Terraform IaC | [`infra/gcp`](infra/gcp), [`infra/aws`](infra/aws) — remote state, keyless auth, no hardcoded secrets |
-| CI/CD automation | [`.github/workflows/ci.yml`](.github/workflows/ci.yml), [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) |
+| Traditional/push-based CI/CD (Jenkins) | [`Jenkinsfile`](Jenkinsfile) — build → scan → push to ECR → `kubectl apply`, on a Jenkins controller provisioned by [`infra/aws/jenkins.tf`](infra/aws/jenkins.tf) |
+| Terraform IaC | [`infra/gcp`](infra/gcp), [`infra/aws`](infra/aws) — remote/local state as appropriate, keyless or IAM-role auth, no hardcoded secrets |
+| CI/CD automation | [`.github/workflows/ci.yml`](.github/workflows/ci.yml), [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) (GCP); [`Jenkinsfile`](Jenkinsfile) (AWS) |
 | DevSecOps | `trivy` image scanning + `tfsec` IaC scanning in `ci.yml`, non-root container user in [`app/api/Dockerfile`](app/api/Dockerfile) |
 | Observability, SLIs/SLOs, DORA metrics | [`observability/`](observability) — kube-prometheus-stack + a Grafana dashboard with error-rate/latency SLIs and a deploy-frequency panel |
 | HashiCorp Vault, secrets lifecycle | [`security/vault/`](security/vault) — Vault dev-mode + Kubernetes auth + policy/role, consumed via Vault Agent injection |
-| FinOps: cost governance, tagging | Consistent `labels`/`tags` on every resource in both Terraform stacks; SPOT node group + single NAT gateway on AWS, Autopilot (pay-per-pod) + `google_billing_budget` alert on GCP |
+| FinOps: cost governance, tagging | Consistent `labels`/`tags` on every resource in both Terraform stacks; SPOT node group + single NAT gateway + small Jenkins instance on AWS, Autopilot (pay-per-pod) + `google_billing_budget` alert on GCP |
+| Security-conscious infra design | AWS Jenkins host uses SSM Session Manager instead of SSH (no key pair, no open port 22), its own least-privilege IAM role via EKS access entries rather than shared cluster-admin creds |
 | Zero-downtime deployments | Rolling `Deployment` + `HorizontalPodAutoscaler` in [`gitops/k8s/base`](gitops/k8s/base) |
 
 ## Repo layout
@@ -88,17 +104,21 @@ cluster.** Nothing is ever `kubectl apply`'d by hand.
 ```
 app/api/            FastAPI + Redis task service (the thing being deployed)
 infra/gcp/           Terraform: VPC, GKE Autopilot, Artifact Registry, WIF, budget — live
-infra/aws/           Terraform: VPC, EKS, ECR — apply-ready, not deployed (see infra/aws/README.md)
+infra/aws/           Terraform: VPC, EKS, ECR, Jenkins EC2 — live (see infra/aws/README.md)
 gitops/argocd/       ArgoCD install values + app-of-apps definitions
-gitops/k8s/base/     Kustomize manifests ArgoCD actually syncs
+gitops/k8s/base/     Kustomize manifests ArgoCD actually syncs (GCP)
+deploy/aws/k8s/      Kustomize manifests Jenkins applies directly (AWS)
 observability/       kube-prometheus-stack values + Grafana dashboard
 security/vault/      Vault values + one-time init job + injection demo
-.github/workflows/   ci.yml (build/scan/push/gitops-bump), deploy.yml (terraform + ArgoCD bootstrap)
-docs/bootstrap.md    One-time gcloud setup (Cloud Shell) before the first deploy
+.github/workflows/   ci.yml (build/scan/push/gitops-bump), deploy.yml (terraform + ArgoCD bootstrap) — GCP
+Jenkinsfile          Build/scan/push/deploy pipeline — AWS
+docs/bootstrap.md    One-time gcloud setup (Cloud Shell) before the first GCP deploy
+docs/bootstrap-aws.md One-time AWS setup (CloudShell) + Jenkins pipeline setup
 ```
 
 ## Getting started
 
+**GCP (GitOps path):**
 1. Read [`docs/bootstrap.md`](docs/bootstrap.md) — a ~10 minute, copy-paste
    Cloud Shell setup (state bucket, Workload Identity Federation, deploy
    service account). No local Terraform/gcloud install needed; everything
@@ -109,18 +129,29 @@ docs/bootstrap.md    One-time gcloud setup (Cloud Shell) before the first deploy
    sync in the ArgoCD UI, or `-n observability svc/kube-prometheus-stack-grafana 3000:80`
    for the dashboard.
 
+**AWS (Jenkins path):**
+1. Read [`docs/bootstrap-aws.md`](docs/bootstrap-aws.md) — CloudShell,
+   `terraform apply`, unlock Jenkins, create the pipeline.
+2. Click **Build Now** in Jenkins (or push to `main` if you've wired up a
+   webhook) — it lints/tests, builds the image, pushes to ECR, then
+   `kubectl apply`s straight to EKS itself.
+3. `kubectl get svc taskflow-api` for the LoadBalancer IP.
+
 ## Cost
 
-Everything here is sized for a free-trial budget: GKE Autopilot (pay-per-pod,
-no idle node cost), short Prometheus retention with no persistent volumes,
-Vault in dev mode, SPOT capacity on the (undeployed) AWS side. Run
-`terraform destroy` in `infra/gcp` once you're done capturing a demo — it's
-all code, so standing it back up is one `terraform apply` away.
+Everything here is sized for a free-trial budget. On GCP: GKE Autopilot
+(pay-per-pod, no idle node cost), short Prometheus retention with no
+persistent volumes, Vault in dev mode. On AWS: SPOT worker nodes, a single
+NAT gateway, and a small Jenkins instance — though EKS itself has a flat
+~$0.10/hr control-plane fee regardless of usage (unlike GKE Autopilot).
+`terraform destroy` in `infra/gcp` and/or `infra/aws` once you're done
+capturing a demo — it's all code, so standing it back up is one
+`terraform apply` away.
 
 ## Phase 2 (documented, not built)
 
-- Deploy the AWS/EKS mirror live alongside GCP for a true active multi-cloud demo.
 - An Azure/AKS mirror to match GCP and AWS, using the same Terraform structure.
 - Consul for service discovery/mesh alongside Vault.
 - SonarCloud static analysis (needs an external account) alongside `trivy`/`tfsec`.
 - Four Keys-style full DORA metrics pipeline instead of the lightweight Grafana annotation approach used now.
+- Observability (Prometheus/Grafana) and Vault on the AWS side too — currently GCP-only.

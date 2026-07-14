@@ -27,3 +27,14 @@ variable "node_instance_type" {
   type        = string
   default     = "t3.small"
 }
+
+variable "admin_cidr" {
+  description = "Your IP in CIDR form (e.g. 1.2.3.4/32), used to restrict access to the Jenkins UI. Find yours at whatismyip.com"
+  type        = string
+}
+
+variable "jenkins_instance_type" {
+  description = "EC2 instance type for the Jenkins controller"
+  type        = string
+  default     = "t3.medium"
+}
