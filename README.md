@@ -59,23 +59,14 @@ cluster.** Nothing is ever `kubectl apply`'d by hand.
 
 ## Screenshots
 
-| ArgoCD — app-of-apps synced | Grafana — SLO/DORA dashboard | Live API |
-|---|---|---|
-| ![ArgoCD apps](docs/screenshots/argocd-apps.png) | ![Grafana dashboard](docs/screenshots/grafana-dashboard.png) | ![API response](docs/screenshots/api-response.png) |
+**ArgoCD — app-of-apps synced**
+<img width="1685" height="542" alt="ArgoCD showing root, taskflow-api, observability, and vault Applications" src="https://github.com/user-attachments/assets/26dcb951-cd6d-4856-bd81-19a0596e9c7c" />
 
-*(Drop your own PNGs into [`docs/screenshots/`](docs/screenshots) with these
-exact filenames and they'll render above automatically.)*
+**Grafana — SLO & deploy-frequency dashboard, live traffic**
+<img width="1887" height="877" alt="Grafana dashboard with request rate, latency, and pod restart panels populated" src="https://github.com/user-attachments/assets/c210c45f-e4a7-43b5-ab63-9c5e950d7485" />
 
-- **ArgoCD apps** — `kubectl port-forward svc/argocd-server -n argocd 8080:443`,
-  open `https://localhost:8080`, log in (`admin` / `kubectl -n argocd get secret
-  argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d`), and
-  screenshot the four synced Applications (`root`, `taskflow-api`,
-  `observability`, `vault`).
-- **Grafana dashboard** — open the "TaskFlow — SLO & Deploy Frequency"
-  dashboard with real traffic flowing (curl the API a few times first so the
-  request-rate/latency panels aren't empty).
-- **Live API** — a terminal `curl` against the LoadBalancer IP showing
-  `/healthz` and a real `/tasks` response.
+**Live API — real request/response**
+<img width="1320" height="55" alt="Terminal curl POST creating a task and GET returning it" src="https://github.com/user-attachments/assets/3bea7374-10fd-437c-a1b5-5dcf8d4308e2" />
 
 ## What this proves (resume → repo)
 
