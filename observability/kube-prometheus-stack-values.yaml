@@ -4,11 +4,13 @@ grafana:
   enabled: true
   adminPassword: "" # set via --set on install if you want a fixed password; otherwise auto-generated
   service:
-    # LoadBalancer (not ClusterIP) so it's reachable directly without going
-    # through Cloud Shell's Web Preview proxy, which Grafana's CSRF/Origin
-    # check rejects. Switch back to ClusterIP (~$18/mo LB cost) once you're
-    # done viewing/screenshotting the dashboard.
-    type: LoadBalancer
+    # ClusterIP: no ongoing LoadBalancer cost. Access via
+    # `kubectl port-forward svc/kube-prometheus-stack-grafana -n observability 3000:80`.
+    # Note: viewing it through Cloud Shell's Web Preview will hit the same
+    # CSRF "origin not allowed" 403 seen before, since Grafana's Origin check
+    # rejects Cloud Shell's proxy domain — temporarily switch back to
+    # LoadBalancer if you need to view it live again.
+    type: ClusterIP
   defaultDashboardsEnabled: true
   sidecar:
     dashboards:
