@@ -30,3 +30,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true # this chart also bundles the Prometheus Operator CRDs, too large for client-side apply

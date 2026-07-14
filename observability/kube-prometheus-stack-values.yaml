@@ -46,3 +46,21 @@ prometheus-node-exporter:
     requests:
       cpu: 25m
       memory: 32Mi
+
+# GKE Autopilot manages kube-system and blocks any user write to it, so the
+# chart's default control-plane scrape targets (which need to create
+# Services/Endpoints there) can never work here regardless of RBAC — disable
+# them rather than leave them permanently failing.
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubeEtcd:
+  enabled: false
+coreDns:
+  enabled: false
+prometheusOperator:
+  kubeletService:
+    enabled: false
