@@ -10,5 +10,5 @@ resources:
 
 images:
   - name: taskflow-api
-    newName: REPLACED_BY_CI/taskflow-api
-    newTag: placeholder
+    newName: us-central1-docker.pkg.dev/multicloud-gitops/taskflow/taskflow-api
+    newTag: ba772ad
