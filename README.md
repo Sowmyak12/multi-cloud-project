@@ -120,6 +120,7 @@ all code, so standing it back up is one `terraform apply` away.
 ## Phase 2 (documented, not built)
 
 - Deploy the AWS/EKS mirror live alongside GCP for a true active multi-cloud demo.
+- An Azure/AKS mirror to match GCP and AWS, using the same Terraform structure.
 - Consul for service discovery/mesh alongside Vault.
 - SonarCloud static analysis (needs an external account) alongside `trivy`/`tfsec`.
 - Four Keys-style full DORA metrics pipeline instead of the lightweight Grafana annotation approach used now.
