@@ -1,16 +1,13 @@
 #!/bin/bash
 set -euxo pipefail
 
-# Java + Jenkins
+# Java + Jenkins. Import the signing key directly via rpm --import (the
+# officially recommended method) and use Jenkins' own .repo file rather than
+# hand-authoring one — a hand-written gpgkey=file:// reference here
+# previously caused an intermittent "wrong key(s)" GPG check failure.
 dnf install -y java-17-amazon-corretto
-curl -fsSL https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key -o /etc/pki/rpm-gpg/jenkins.io-2023.key
-cat <<'REPO' > /etc/yum.repos.d/jenkins.repo
-[jenkins]
-name=Jenkins
-baseurl=https://pkg.jenkins.io/redhat-stable
-gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/jenkins.io-2023.key
-REPO
+rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+curl -fsSL https://pkg.jenkins.io/redhat-stable/jenkins.repo -o /etc/yum.repos.d/jenkins.repo
 dnf install -y jenkins
 systemctl enable jenkins
 
