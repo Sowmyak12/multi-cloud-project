@@ -73,6 +73,8 @@ different deployment philosophy to demonstrate both.
 
 ## Screenshots
 
+### GCP (GitOps/ArgoCD)
+
 **ArgoCD — app-of-apps synced**
 ![ArgoCD showing root, taskflow-api, observability, and vault Applications](docs/screenshots/argocd-apps.png)
 
@@ -81,6 +83,17 @@ different deployment philosophy to demonstrate both.
 
 **Live API — real request/response**
 ![Terminal curl POST creating a task and GET returning it](docs/screenshots/api-response.png)
+
+### AWS (Jenkins, push-based)
+
+**Jenkins — pipeline succeeding**
+![Jenkins taskflow-aws-deploy job showing a successful build](docs/screenshots/jenkins-pipeline.png)
+
+**Jenkins — deploy stage rolling out to EKS**
+![Console output showing kubectl apply -k and a successful rollout](docs/screenshots/jenkins-deploy-log.png)
+
+**Live API — real request/response**
+![Terminal curl against the AWS ELB showing healthz and a created task](docs/screenshots/aws-api-response.png)
 
 ## What this proves (resume → repo)
 
