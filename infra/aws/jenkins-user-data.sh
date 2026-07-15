@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euxo pipefail
 
+# git (Jenkins' SCM checkout needs the binary itself, not just a plugin) and
+# python3-pip (the Jenkinsfile's lint/test stage needs pip + venv).
+dnf install -y git python3-pip
+
 # Java + Jenkins. gpgcheck is disabled for this repo: the key at
 # pkg.jenkins.io/redhat-stable/jenkins.io-2023.key has repeatedly not
 # matched the package actually served (Jenkins has rotated signing keys
