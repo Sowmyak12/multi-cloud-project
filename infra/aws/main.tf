@@ -50,7 +50,10 @@ module "eks" {
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
 
-  cluster_endpoint_public_access = true
+  cluster_endpoint_public_access  = true
+  cluster_endpoint_private_access = false # Jenkins sits in the public subnet with its own SG,
+  # not the one EKS auto-allows to reach the private endpoint's IP — keep DNS
+  # resolving only to the public endpoint to avoid that entirely.
 
   authentication_mode = "API_AND_CONFIG_MAP"
 
