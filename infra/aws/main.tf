@@ -55,6 +55,12 @@ module "eks" {
   # not the one EKS auto-allows to reach the private endpoint's IP — keep DNS
   # resolving only to the public endpoint to avoid that entirely.
 
+  # Pinned to match the real cluster's actual value (set implicitly when it
+  # was first created) — the module's current default differs, which would
+  # otherwise force a full cluster replacement for a flag that doesn't
+  # actually matter for this single-cluster demo.
+  bootstrap_self_managed_addons = false
+
   authentication_mode = "API_AND_CONFIG_MAP"
 
   access_entries = {

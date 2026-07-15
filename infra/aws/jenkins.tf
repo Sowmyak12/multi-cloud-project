@@ -85,8 +85,16 @@ resource "aws_instance" "jenkins" {
 
   associate_public_ip_address = true
 
-  user_data                   = file("${path.module}/jenkins-user-data.sh")
-  user_data_replace_on_change = true
+  user_data = file("${path.module}/jenkins-user-data.sh")
 
   tags = merge(local.tags, { Name = "jenkins-controller" })
+
+  # This instance's software was hand-corrected via SSM after several
+  # user-data bugs (GPG key, Java version, missing git/pip) were fixed one at
+  # a time on the *running* box rather than by replacing it. Ignore future
+  # script edits here so they don't trigger a destructive replace of an
+  # instance that's already been manually brought to a working state.
+  lifecycle {
+    ignore_changes = [user_data, ami]
+  }
 }
