@@ -21,6 +21,22 @@ def test_healthz(client):
     assert resp.json()["status"] == "ok"
 
 
+def test_readyz(client):
+    resp = client.get("/readyz")
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ready"
+
+
+def test_list_tasks(client):
+    client.post("/tasks", json={"title": "first task"})
+    client.post("/tasks", json={"title": "second task"})
+
+    resp = client.get("/tasks")
+    assert resp.status_code == 200
+    titles = {task["title"] for task in resp.json()}
+    assert titles == {"first task", "second task"}
+
+
 def test_create_and_get_task(client):
     created = client.post("/tasks", json={"title": "write portfolio project"})
     assert created.status_code == 201
