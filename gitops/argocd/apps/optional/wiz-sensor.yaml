@@ -1,0 +1,36 @@
+# Optional — deliberately NOT in gitops/argocd/apps/children, so the root
+# app-of-apps does not auto-sync this. Wiz's chart repo URL/version and the
+# clientId/clientSecret are tenant-specific (generated on Wiz's own
+# Kubernetes connector setup page), so this can't be made to work out of the
+# box the way the other Applications in this repo do.
+#
+# To activate: fill in <WIZ_HELM_REPO_URL> and <WIZ_CHART_VERSION> from your
+# Wiz console, create the referenced Secret with your real clientId/
+# clientSecret, then move (or symlink) this file into
+# gitops/argocd/apps/children/ so the root app picks it up.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: wiz-sensor
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: <WIZ_HELM_REPO_URL> # from Wiz console > Security Graph > Connectors > Kubernetes
+      chart: wiz-sensor
+      targetRevision: <WIZ_CHART_VERSION>
+      helm:
+        valueFiles:
+          - $values/security/wiz/values.yaml
+    - repoURL: https://github.com/Sowmyak12/multi-cloud-project.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: wiz
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

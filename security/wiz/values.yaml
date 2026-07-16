@@ -1,0 +1,25 @@
+# Wiz Sensor (runtime/in-cluster component) — values template.
+#
+# Wiz's core CSPM/vulnerability scanning is agentless: you connect it to a
+# cloud account via IAM role/service account, the same pattern GCP and AWS
+# already use elsewhere in this repo. The Sensor deployed here is the
+# *optional* add-on for deeper runtime visibility (process/file/network
+# activity inside running containers) that Wiz layers on top of that.
+#
+# This chart repo URL/version is intentionally not filled in: Wiz generates
+# them per-tenant on its Kubernetes connector setup page (Security Graph >
+# Connectors > add Kubernetes cluster), along with the clientId/clientSecret
+# below. See ../../security/wiz/README.md for the full activation walkthrough.
+
+wizSensor:
+  dataCenter: "" # e.g. "gov-us1", "us1", "eu1" — shown on the connector setup page
+  clientId: "" # from the Wiz connector; store as a real value only in a
+  # Kubernetes Secret referenced here, never committed in plaintext.
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi

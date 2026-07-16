@@ -108,6 +108,7 @@ different deployment philosophy to demonstrate both.
 | DevSecOps | `trivy` image scanning + `tfsec` IaC scanning in `ci.yml`, non-root container user in [`app/api/Dockerfile`](app/api/Dockerfile) |
 | Observability, SLIs/SLOs, DORA metrics | [`observability/`](observability) — kube-prometheus-stack + a Grafana dashboard with error-rate/latency SLIs and a deploy-frequency panel |
 | HashiCorp Vault, secrets lifecycle | [`security/vault/`](security/vault) — Vault dev-mode + Kubernetes auth + policy/role, consumed via Vault Agent injection |
+| Wiz / CNAPP | [`security/wiz/`](security/wiz) — IaC scanning wired into CI, in-cluster Sensor deployment via ArgoCD; see that folder's README for exactly what's real vs. tenant-activated |
 | FinOps: cost governance, tagging | Consistent `labels`/`tags` on every resource in both Terraform stacks; SPOT node group + single NAT gateway + small Jenkins instance on AWS, Autopilot (pay-per-pod) + `google_billing_budget` alert on GCP |
 | Security-conscious infra design | AWS Jenkins host uses SSM Session Manager instead of SSH (no key pair, no open port 22), its own least-privilege IAM role via EKS access entries rather than shared cluster-admin creds |
 | Zero-downtime deployments | Rolling `Deployment` + `HorizontalPodAutoscaler` in [`gitops/k8s/base`](gitops/k8s/base) |
@@ -123,6 +124,7 @@ gitops/k8s/base/     Kustomize manifests ArgoCD actually syncs (GCP)
 deploy/aws/k8s/      Kustomize manifests Jenkins applies directly (AWS)
 observability/       kube-prometheus-stack values + Grafana dashboard
 security/vault/      Vault values + one-time init job + injection demo
+security/wiz/        Wiz CNAPP: CI IaC-scan wiring + optional in-cluster Sensor (see its README)
 .github/workflows/   ci.yml (build/scan/push/gitops-bump), deploy.yml (terraform + ArgoCD bootstrap) — GCP
 Jenkinsfile          Build/scan/push/deploy pipeline — AWS
 docs/bootstrap.md    One-time gcloud setup (Cloud Shell) before the first GCP deploy

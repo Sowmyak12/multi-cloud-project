@@ -49,6 +49,22 @@ jobs:
           working_directory: infra/aws
           soft_fail: true
 
+      - name: Wiz CLI IaC scan
+        # Skips cleanly if WIZ_CLIENT_ID isn't set, so this repo still runs
+        # for anyone without a Wiz tenant. See security/wiz/README.md for
+        # what this demonstrates and how to activate it with a real account.
+        if: ${{ secrets.WIZ_CLIENT_ID != '' }}
+        continue-on-error: true # report, don't block the demo pipeline
+        env:
+          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
+          WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
+        run: |
+          curl -sL -o wizcli https://wizcli.app.wiz.io/latest/wizcli-linux-amd64
+          chmod +x wizcli
+          ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
+          ./wizcli iac scan --path infra/gcp --policy "Default IaC policy"
+          ./wizcli iac scan --path infra/aws --policy "Default IaC policy"
+
   build-and-push:
     name: Build image, scan, push (main only)
     needs: [lint-test, iac-scan]
