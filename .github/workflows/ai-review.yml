@@ -13,7 +13,6 @@ on:
 
 permissions:
   contents: read
-  models: read
   pull-requests: write
 
 jobs:
@@ -27,3 +26,4 @@ jobs:
       - uses: Sowmyak12/iac-ai-reviewer@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          llm-api-key: ${{ secrets.GEMINI_API_KEY }}
