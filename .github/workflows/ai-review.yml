@@ -1,0 +1,29 @@
+# Real consumer of https://github.com/Sowmyak12/iac-ai-reviewer — reviews
+# infra/** PRs here with the same scanner-plus-LLM-synthesis pipeline that
+# repo builds and tests on its own. Advisory only: posts a comment, doesn't
+# block the merge.
+name: ai-iac-review
+
+on:
+  pull_request:
+    paths:
+      - "infra/**"
+      - "gitops/**"
+      - "deploy/**"
+
+permissions:
+  contents: read
+  models: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: Sowmyak12/iac-ai-reviewer@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
