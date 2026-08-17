@@ -5,6 +5,7 @@ on:
     branches: [main]
   push:
     branches: [main]
+  workflow_dispatch: # required to manually run build-and-push/bump-gitops-image below
 
 permissions:
   contents: write
@@ -70,9 +71,13 @@ jobs:
           ./wizcli iac scan --path infra/aws --policy "Default IaC policy"
 
   build-and-push:
-    name: Build image, scan, push (main only)
+    name: Build image, scan, push (manual — requires live GCP infra)
     needs: [lint-test, iac-scan]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Deliberately manual, not automatic on push: this repo's cloud infra is
+    # torn down between demos (see README "Cost"), so a plain push-to-main
+    # trigger here would fail every time infra isn't currently applied.
+    # Run this from the Actions tab ("Run workflow") after `terraform apply`.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.tag.outputs.tag }}
