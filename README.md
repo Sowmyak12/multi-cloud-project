@@ -106,6 +106,7 @@ different deployment philosophy to demonstrate both.
 | Terraform IaC | [`infra/gcp`](infra/gcp), [`infra/aws`](infra/aws) — remote/local state as appropriate, keyless or IAM-role auth, no hardcoded secrets |
 | CI/CD automation | [`.github/workflows/ci.yml`](.github/workflows/ci.yml), [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) (GCP); [`Jenkinsfile`](Jenkinsfile) (AWS) |
 | DevSecOps | `trivy` image scanning + `tfsec` IaC scanning in `ci.yml`, non-root container user in [`app/api/Dockerfile`](app/api/Dockerfile) |
+| Applied AI in the DevSecOps pipeline | [`.github/workflows/ai-review.yml`](.github/workflows/ai-review.yml) — `infra/`/`gitops/`/`deploy/` PRs here are reviewed by [iac-ai-reviewer](https://github.com/Sowmyak12/iac-ai-reviewer), a companion project: tfsec/checkov findings synthesized into one prioritized comment via GitHub Models (free), advisory-only by design |
 | Observability, SLIs/SLOs, DORA metrics | [`observability/`](observability) — kube-prometheus-stack + a Grafana dashboard with error-rate/latency SLIs and a deploy-frequency panel |
 | HashiCorp Vault, secrets lifecycle | [`security/vault/`](security/vault) — Vault dev-mode + Kubernetes auth + policy/role, consumed via Vault Agent injection |
 | Wiz / CNAPP | [`security/wiz/`](security/wiz) — IaC scanning wired into CI, in-cluster Sensor deployment via ArgoCD; see that folder's README for exactly what's real vs. tenant-activated |
