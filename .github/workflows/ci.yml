@@ -34,6 +34,13 @@ jobs:
   iac-scan:
     name: Scan Terraform for misconfigurations
     runs-on: ubuntu-latest
+    env:
+      # `secrets` isn't a recognized named-value inside `if:` conditionals
+      # (only in env/with/run) — routing it through a job-level env var
+      # first is the documented way to conditionally skip a step based on
+      # whether a secret is set.
+      WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
+      WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
     steps:
       - uses: actions/checkout@v4
 
@@ -53,11 +60,8 @@ jobs:
         # Skips cleanly if WIZ_CLIENT_ID isn't set, so this repo still runs
         # for anyone without a Wiz tenant. See security/wiz/README.md for
         # what this demonstrates and how to activate it with a real account.
-        if: ${{ secrets.WIZ_CLIENT_ID != '' }}
+        if: ${{ env.WIZ_CLIENT_ID != '' }}
         continue-on-error: true # report, don't block the demo pipeline
-        env:
-          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
-          WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
         run: |
           curl -sL -o wizcli https://wizcli.app.wiz.io/latest/wizcli-linux-amd64
           chmod +x wizcli
